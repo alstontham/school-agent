@@ -1,14 +1,10 @@
 name: Daily digest
 
 on:
-  schedule:
-    # 8:00 am and 8:00 pm Eastern. GitHub cron is UTC, so both the EDT and EST
-    # times are listed; digest.py only sends for the one that matches today.
-    - cron: "0 12 * * *"  # 8 am EDT
-    - cron: "0 13 * * *"  # 8 am EST
-    - cron: "0 0 * * *"   # 8 pm EDT
-    - cron: "0 1 * * *"   # 8 pm EST
-  workflow_dispatch:  # "Run workflow" button for sending one manually
+  # Started at 8:00 am and 8:00 pm Eastern by a cron-job.org job calling GitHub's
+  # workflow dispatch API. GitHub's own `schedule:` trigger ran hours late, so it's not used.
+  # Also runnable by hand from the Actions tab ("Run workflow").
+  workflow_dispatch:
 
 jobs:
   send:
@@ -21,7 +17,6 @@ jobs:
           python-version: "3.12"
       - run: python digest.py
         env:
-          SCHEDULE_CRON: ${{ github.event.schedule }}
           CANVAS_TOKEN: ${{ secrets.CANVAS_TOKEN }}
           CANVAS_BASE_URL: https://canvas.mit.edu
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

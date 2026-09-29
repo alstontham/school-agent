@@ -1,8 +1,7 @@
 """Builds the daily digest and sends it to Telegram. Run: python3 digest.py [--dry-run]"""
-import os
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from html import escape
 
 import canvas
@@ -64,29 +63,7 @@ DIGEST_BUTTONS = [[("✅ Mark items done", "manage"), ("🔄 Refresh", "refresh"
                   [("♻️ Re-add removed", "removed")]]
 
 
-SEND_HOURS_ET = (8, 20)
-
-
-def scheduled_slot_is_now(cron):
-    """GitHub cron is UTC, so the workflow fires at both the EDT and EST times.
-
-    Returns True only for the run whose cron time is 8:00 or 20:00 Eastern today,
-    judged by the cron's scheduled time rather than when GitHub actually started it
-    (runs can start several minutes late).
-    """
-    minute, hour = (int(x) for x in cron.split()[:2])
-    now_utc = datetime.now(timezone.utc)
-    scheduled = now_utc.replace(hour=hour, minute=minute, second=0, microsecond=0)
-    if scheduled > now_utc + timedelta(hours=1):
-        scheduled -= timedelta(days=1)  # e.g. a 00:00 UTC run that started late isn't tomorrow's
-    return scheduled.astimezone(config.TZ).hour in SEND_HOURS_ET
-
-
 def main():
-    cron = os.environ.get("SCHEDULE_CRON")  # set by the GitHub Actions workflow
-    if cron and not scheduled_slot_is_now(cron):
-        print(f"Skipping: {cron} (UTC) isn't a send time in Eastern time today.")
-        return
     if "--dry-run" in sys.argv:
         print(build(canvas.upcoming(days=7)))
         return
