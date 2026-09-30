@@ -20,7 +20,7 @@ def _request(method, path, params):
 
 
 def _get(path, params):
-    url = f"{config.CANVAS_BASE_URL}/api/v1/{path}?{urllib.parse.urlencode(params)}"
+    url = f"{config.CANVAS_BASE_URL}/api/v1/{path}?{urllib.parse.urlencode(params, doseq=True)}"
     results = []
     while url:
         req = urllib.request.Request(url, headers={"Authorization": f"Bearer {config.CANVAS_TOKEN}"})

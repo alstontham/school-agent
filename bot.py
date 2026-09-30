@@ -72,8 +72,8 @@ def readd(key):
 
 
 def open_items():
-    sec = digest.sections(canvas.upcoming(days=7))
-    return sec["overdue"] + sec["due_today"] + sec["due_week"]
+    sec = digest.sections(digest.fetch_all())
+    return sec["overdue"] + sec["due_today"] + sec["due_week"] + sec["prep"]
 
 
 def manage_view(undo=None):
@@ -120,13 +120,13 @@ def _edit(message, text, buttons):
 
 def find_item(key):
     """Looks up an item by type:id, including ones already marked done (for undo)."""
-    return next((i for i in canvas.upcoming(days=7) if _key(i) == key), None)
+    return next((i for i in digest.fetch_all() if _key(i) == key), None)
 
 
 def handle_message(msg):
     text = (msg.get("text") or "").strip().split("@")[0].lower()
     if text in ("/digest", "/today"):
-        telegram.send(digest.build(canvas.upcoming(days=7)), buttons=digest.DIGEST_BUTTONS)
+        telegram.send(digest.build(digest.fetch_all()), buttons=digest.DIGEST_BUTTONS)
     elif text in ("/done", "/manage", "/remove"):
         telegram.send(*manage_view())
     elif text in ("/readd", "/removed", "/restore"):
@@ -146,7 +146,7 @@ def handle_callback(cq):
     elif data in ("close", "refresh"):
         # Rebuild the digest from Canvas in place (also turns the menu back into the digest).
         try:
-            _edit(message, digest.build(canvas.upcoming(days=7)), digest.DIGEST_BUTTONS)
+            _edit(message, digest.build(digest.fetch_all()), digest.DIGEST_BUTTONS)
             toast = "Refreshed" if data == "refresh" else ""
         except urllib.error.HTTPError as e:
             # Telegram rejects edits that don't change anything.
