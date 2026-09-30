@@ -40,7 +40,12 @@ def fetch_all(days=7):
 def _prep_line(item, today):
     day = "today" if item["when"].date() == today else item["when"].strftime("%a %-m/%-d")
     # Modules like "Individual Assignment 2 (Due Wed Sept 30th)" are deadlines, not class prep.
-    when = f"due {day}" if "due" in item["module"].lower() else f"for {day}'s class"
+    if item["post"]:
+        when = f"after {day}'s class"
+    elif "due" in item["module"].lower():
+        when = f"due {day}"
+    else:
+        when = f"for {day}'s class"
     title = escape(item["title"])
     if item["url"]:
         title = f'<a href="{escape(item["url"])}">{title}</a>'
