@@ -65,7 +65,6 @@ def sections(items, now=None):
         "overdue": [i for i in todo if i["when"] < now and (i["missing"] or i["points"] > 0)],
         "due_today": [i for i in todo if i["when"] >= now and i["when"].date() == today],
         "due_week": [i for i in todo if i["when"].date() > today],
-        "announcements": [i for i in items if i["type"] == "announcement" and i["when"] > now - timedelta(days=1)],
         # Undated readings/videos/questions from course modules, dated by the module's class date.
         "prep": [i for i in items if i.get("prep") and not i["done"]],
     }
@@ -74,7 +73,7 @@ def sections(items, now=None):
 def build(items, now=None):
     sec = sections(items, now)
     now, overdue, due_today, due_week = sec["now"], sec["overdue"], sec["due_today"], sec["due_week"]
-    announcements, prep = sec["announcements"], sec["prep"]
+    prep = sec["prep"]
 
     heading = "☀️ Morning digest" if now.hour < 17 else "🌙 Evening check-in"
     out = [f"<b>{heading} — {now.strftime('%A, %B %-d')}</b>", ""]
@@ -91,8 +90,6 @@ def build(items, now=None):
         out += [""]
     if prep:
         out += ["<b>📖 Class prep & readings</b>"] + [l for i in prep for l in _prep_line(i, now.date())] + [""]
-    if announcements:
-        out += ["<b>📣 New announcements</b>"] + [f"• <b>{escape(i['course_name'])}</b> {escape(i['title'])}" for i in announcements] + [""]
     return "\n".join(out).strip()
 
 
