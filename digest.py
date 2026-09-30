@@ -3,6 +3,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from html import escape
+from itertools import groupby
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -77,7 +78,13 @@ def build(items, now=None):
         out += ["<b>⚠️ Past due (not submitted)</b>"] + [_line(i, show_day=True) for i in overdue] + [""]
     out += ["<b>🔥 Due today</b>"] + ([_line(i) for i in due_today] or ["Nothing due today 🎉"]) + [""]
     if due_week:
-        out += ["<b>📅 Next 7 days</b>"] + [_line(i, show_day=True) for i in due_week] + [""]
+        out += ["<b>📅 Next 7 days</b>"]
+        for day, group in groupby(due_week, key=lambda i: i["when"].date()):
+            label = day.strftime("%A %-m/%-d")
+            if day == now.date() + timedelta(days=1):
+                label = "Tomorrow, " + label
+            out += [f"<u>{label}</u>"] + [_line(i) for i in group]
+        out += [""]
     if prep:
         out += ["<b>📖 Class prep & readings</b>"] + [l for i in prep for l in _prep_line(i, now.date())] + [""]
     if classes:
